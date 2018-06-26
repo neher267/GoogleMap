@@ -37,6 +37,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -45,7 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback{
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnMarkerDragListener{
 
     private GoogleMap mMap;
     private static final String TAG = "MapsActivity";
@@ -61,7 +62,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ImageView mMyLocationView;
     protected GeoDataClient mGeoDataClient;
 
-    private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(new LatLng(-40, -168), new LatLng(71, 136));
+    private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(new LatLng(20.797425846129503, 87.86243451562495), new LatLng(26.745824752661083, 92.70740521874995));
 
 
     @Override
@@ -102,6 +103,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+        mSearchText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSearchText.setText("");
+            }
+        });
+
         mPlaceAutocompleteAdapter =  new PlaceAutocompleteAdapter(this, mGeoDataClient, LAT_LNG_BOUNDS, null);
 
         mSearchText.setAdapter(mPlaceAutocompleteAdapter);
@@ -127,6 +135,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void geoLocate(@Nullable String searchString){
+        if (mMap != null){
+            mMap.clear();
+        }
         Log.d(TAG, "geoLocate: geolocating");
         if (searchString == null){
             searchString = mSearchText.getText().toString();
@@ -171,10 +182,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             mMap.setMyLocationEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
+            mMap.setOnMarkerClickListener(this);
+            mMap.setOnMarkerDragListener(this);
         }
     }
 
     private void getDeviceLocation(){
+        /*if (mMap != null){
+            mMap.clear();
+        }*/
         Log.d(TAG, "getDeviceLocation: getting the device current location");
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -209,6 +225,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             MarkerOptions markerOptions = new MarkerOptions()
                     .position(latLng)
                     .title(title);
+
+            markerOptions.draggable(true);
+
             mMap.addMarker(markerOptions);
         }
     }
@@ -285,4 +304,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Log.d(TAG, "Autocomplete item selected: " + primaryText);
         }
     };
+
+
+    @Override
+    public void onMarkerDragStart(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDrag(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDragEnd(Marker marker) {
+
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        marker.setDraggable(true);
+        return false;
+    }
 }
